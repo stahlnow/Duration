@@ -45,7 +45,7 @@ DurationController::DurationController(){
 	enabled = false;
 	shouldCreateNewProject = false;
     shouldLoadProject = false;
-	audioTrack = NULL;
+	//audioTrack = NULL;
 
     headersEnabled = true;
 }
@@ -726,6 +726,7 @@ void DurationController::handleOscIn(){
 				ofLogError("Duration:OSC") << "Set color palette failed, incorrectly formatted arguments \n usage: /duration/colorpalette trackname:string imagefilepath:string";
 			}
 		}
+        /*
 		else if(m.getAddress() == "/duration/audioclip"){
 			if(m.getNumArgs() == 1 && m.getArgType(0) == OFXOSC_TYPE_STRING){
 				if(audioTrack != NULL){
@@ -741,6 +742,7 @@ void DurationController::handleOscIn(){
 				ofLogError("Duration:OSC") << "Set audio clip failed, incorrectly formatted arguments. \n usage /duration/audioclip filepath:string ";
 			}
 		}
+        */
 	}
 }
 
@@ -806,6 +808,7 @@ void DurationController::handleOscOut(){
 						messageValid = true;
 					}
 				}
+                /*
 				else if(trackType == "Audio"){
 					ofxTLAudioTrack* audio = (ofxTLAudioTrack*)tracks[t];
 					if(audio->getIsPlaying() || timeline.getIsPlaying()){
@@ -816,6 +819,7 @@ void DurationController::handleOscOut(){
 						messageValid = true;
 					}
 				}
+                */
 				if(messageValid){
 					m.setAddress(ofFilePath::addLeadingSlash(pages[i]->getName()) + ofFilePath::addLeadingSlash(tracks[t]->getDisplayName()));
 					bundle.addMessage(m);
@@ -1157,6 +1161,7 @@ ofxTLTrack* DurationController::addTrack(string trackType, string trackName, str
 	else if(trackType == translation.translateKey("lfo") || trackType == "lfo"){
 		newTrack = timeline.addLFO(trackName, xmlFileName);
 	}
+    /*
 	else if(trackType == translation.translateKey("audio") || trackType == "audio"){
 		if(audioTrack != NULL){
 			ofLogError("DurationController::addTrack") << "Trying to add an additional audio track";
@@ -1168,6 +1173,7 @@ ofxTLTrack* DurationController::addTrack(string trackType, string trackName, str
 			newTrack = audioTrack;
 		}
 	}
+    */
 	else {
 		ofLogError("DurationController::addTrack") << "Unsupported track type: " << trackType;
 	}
@@ -1190,6 +1196,7 @@ void DurationController::update(ofEventArgs& args){
 	timeLabel->setLabel(timeline.getCurrentTimecode());
 	playpauseToggle->setValue(timeline.getIsPlaying());
 
+    /*
 	if(audioTrack != NULL && audioTrack->isSoundLoaded()){
 
 		if(timeline.getTimecontrolTrack() != audioTrack){
@@ -1204,6 +1211,7 @@ void DurationController::update(ofEventArgs& args){
 			durationLabel->setTextString(timeline.getDurationInTimecode());
 		}
 	}
+    */
 
 	if(ofGetHeight() < timeline.getDrawRect().getMaxY()){
 		ofSetWindowShape(ofGetWidth(), timeline.getDrawRect().getMaxY()+30);
@@ -1267,6 +1275,7 @@ void DurationController::update(ofEventArgs& args){
 			lock();
             timeline.removeTrack(it->first);
 			timeline.setTimecontrolTrack(NULL);
+            /*
 			if(it->second->getTrackType() == "Audio"){
 				if(audioTrack == NULL){
 					ofLogError("Audio track inconsistency");
@@ -1275,7 +1284,7 @@ void DurationController::update(ofEventArgs& args){
 					delete audioTrack;
 					audioTrack = NULL;
 				}
-			}
+			}*/
             headers.erase(it);
 			unlock();
 			needsSave = true;
@@ -1579,10 +1588,13 @@ void DurationController::loadProject(string projectPath, string projectName, boo
     timeline.reset();
     timeline.setup();
 
+    /*
 	if(audioTrack != NULL){
 		delete audioTrack;
 		audioTrack = NULL;
 	}
+    */
+
     timeline.setWorkingFolder(projectPath);
 
     //LOAD ALL TRACKS
@@ -1623,6 +1635,7 @@ void DurationController::loadProject(string projectPath, string projectName, boo
 					ofxTLColorTrack* colors = (ofxTLColorTrack*)newTrack;
 					colors->loadColorPalette(projectSettings.getValue("palette", timeline.getDefaultColorPalettePath()));
 				}
+                /*
 				else if(newTrack->getTrackType() == "Audio"){
 					string clipPath = projectSettings.getValue("clip", "");
 					if(clipPath != ""){
@@ -1633,6 +1646,7 @@ void DurationController::loadProject(string projectPath, string projectName, boo
 //					cout << "set " << numbins << " after load " << headerTrack->getNumberOfBins() << endl;
 					//audioTrack->getFFTSpectrum(projectSettings.getValue("bins", 256));
 				}
+                */
 
 				string displayName = projectSettings.getValue("displayName","");
 				if(displayName != ""){
@@ -1755,11 +1769,13 @@ void DurationController::saveProject(){
 				ofxTLColorTrack* colors = (ofxTLColorTrack*)tracks[t];
 				projectSettings.addValue("palette", colors->getPalettePath());
 			}
+            /*
 			else if(trackType == "Audio"){
 				projectSettings.addValue("clip", audioTrack->getSoundfilePath());
 //				int numbins = audioTrack->getFFTBinCount();
 //				projectSettings.addValue("bins", audioTrack->getFFTBinCount());
 			}
+            */
             projectSettings.popTag();
         }
         projectSettings.popTag(); //page

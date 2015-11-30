@@ -31,7 +31,7 @@
  */
 
 #include "ofxTLUIHeader.h"
-#include "ofxTLAudioTrack.h"
+//#include "ofxTLAudioTrack.h"
 
 #include <locale>
 bool isNumber(const string& s){
@@ -136,6 +136,8 @@ void ofxTLUIHeader::setTrackHeader(ofxTLTrackHeader* header){
 		palette->setPadding(0);
 		gui->addWidgetRight(palette);
 	}
+
+    /*
 	else if(trackType == "Audio"){
 		audioClip = new ofxUILabelButton(translation->translateKey("select audio"), false,0,0,0,0, OFX_UI_FONT_SMALL);
 		audioClip->setPadding(0);
@@ -151,6 +153,7 @@ void ofxTLUIHeader::setTrackHeader(ofxTLTrackHeader* header){
 //		bins->setPadding(0);
 //		gui->addWidgetRight(bins);
 	}
+    */
 
 	if(trackType == "Bangs" || trackType == "Curves"){
 		receiveOSCEnable = new ofxUIToggle("RX", true, 17, 17, 0, 0, OFX_UI_FONT_SMALL);
@@ -381,6 +384,7 @@ void ofxTLUIHeader::guiEvent(ofxUIEventArgs &e){
         track->setValueRange(newValueRange);
 		modified = true;
 	}
+    /*
 	else if(e.widget == audioClip && audioClip->getValue()){
 		ofFileDialogResult r = ofSystemLoadDialog();
 		if(r.bSuccess){
@@ -389,6 +393,7 @@ void ofxTLUIHeader::guiEvent(ofxUIEventArgs &e){
 			modified = true;
 		}
 	}
+    */
     /*
 	else if(e.widget == bins){
 		if(!isNumber(bins->getTextString())){
