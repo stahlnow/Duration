@@ -46,6 +46,8 @@ DurationController::DurationController(){
 	shouldCreateNewProject = false;
     shouldLoadProject = false;
 	audioTrack = NULL;
+
+    headersEnabled = true;
 }
 
 DurationController::~DurationController(){
@@ -86,7 +88,7 @@ void DurationController::disableInterface(){
 }
 
 bool DurationController::isInterfaceEnabled(){
-	return enabled;
+    return enabled;
 }
 
 void DurationController::setup(){
@@ -138,11 +140,11 @@ void DurationController::setup(){
     }
 
 #ifdef TARGET_WIN32
-	timeline.setupFont("GUI/mplus-1c-regular.ttf", 9);
-	tooltipFont.loadFont("GUI/mplus-1c-regular.ttf", 7);
+	timeline.setupFont("GUI/NewMedia Fett.ttf", 9);
+	tooltipFont.loadFont("GUI/NewMedia Fett.ttf", 7);
 #else
-	timeline.setupFont("GUI/mplus-1c-regular.ttf", 6);
-	tooltipFont.loadFont("GUI/mplus-1c-regular.ttf", 5);
+	timeline.setupFont("GUI/NewMedia Fett.ttf", 9);
+	tooltipFont.loadFont("GUI/NewMedia Fett.ttf", 7);
 #endif
 	//setup timeline
 	timeline.setup();
@@ -154,8 +156,8 @@ void DurationController::setup(){
 	timeline.setOffset(ofVec2f(0, 90));
     timeline.setBPM(120.f);
 	timeline.setAutosave(false);
-	timeline.setEditableHeaders(true);
-	timeline.moveToThread(); //increases accuracy of bang call backs
+	timeline.setEditableHeaders(false);
+    timeline.moveToThread(); //increases accuracy of bang call backs
 
 	//Set up top GUI
     gui = new ofxUICanvas(0,0,ofGetWidth(), 90);
@@ -164,6 +166,15 @@ void DurationController::setup(){
     projectDropDown = new ofxUIDropDownList(DROP_DOWN_WIDTH, "PROJECT", projects, OFX_UI_FONT_LARGE);
     projectDropDown->setAutoClose(true);
     gui->addWidgetDown(projectDropDown);
+
+    // ADD PAGE
+    addPage = new ofxUILabelButton("ADD PAGE", false, DROP_DOWN_WIDTH/2, 16, 0, 0, OFX_UI_FONT_MEDIUM, false);
+    gui->addWidgetSouthOf(addPage, "PROJECT");
+
+    // REM PAGE
+    removePage = new ofxUILabelButton("REM PAGE", false, DROP_DOWN_WIDTH/2, 16, 0, 0, OFX_UI_FONT_MEDIUM, false);
+    gui->addWidgetEastOf(removePage, "ADD PAGE");
+
     //ADD TRACKS
     vector<string> trackTypes;
     trackTypes.push_back(translation.translateKey("bangs"));
@@ -178,7 +189,19 @@ void DurationController::setup(){
     addTrackDropDown->setAllowMultiple(false);
     addTrackDropDown->setAutoClose(true);
 	//    gui->addWidgetRight(addTrackDropDown);
-	gui->addWidgetSouthOf(addTrackDropDown, "PROJECT");
+	gui->addWidgetSouthOf(addTrackDropDown, "ADD PAGE");
+
+    // RENAME PAGE
+    renamePage = new ofxUITextInput("RENAME PAGE", "", TEXT_INPUT_WIDTH*2, 0, 0, 0, OFX_UI_FONT_MEDIUM);
+    renamePage->setAutoClear(false);
+    renamePage->setAutoUnfocus(true);
+    gui->addWidgetEastOf(renamePage, "ADD TRACK");
+
+    movePageLeft = new ofxUILabelButton("<", false, DROP_DOWN_WIDTH/4, 16, 0, 0, OFX_UI_FONT_MEDIUM, false);
+    gui->addWidgetEastOf(movePageLeft, "RENAME PAGE");
+    movePageRight = new ofxUILabelButton(">", false, DROP_DOWN_WIDTH/4, 16, 0, 0, OFX_UI_FONT_MEDIUM, false);
+    gui->addWidgetEastOf(movePageRight, "<");
+
 
     saveButton = new ofxUIMultiImageButton(32, 32, false, "GUI/save_.png", "SAVE");
     saveButton->setLabelVisible(false);
@@ -217,6 +240,7 @@ void DurationController::setup(){
 //    snapToBPMToggle = new ofxUILabelToggle("Snap to BPM",false,0,0,0,0,OFX_UI_FONT_SMALL);
 //    gui->addWidgetSouthOf(snapToBPM, "BPM");
 
+
     //SETUP OSC CONTROLS
     enableOSCInToggle = new ofxUILabelToggle(translation.translateKey("OSC IN"),false,0,0,0,0, OFX_UI_FONT_MEDIUM);
     enableOSCOutToggle = new ofxUILabelToggle(translation.translateKey("OSC OUT"),false,0,0,0,0, OFX_UI_FONT_MEDIUM);
@@ -239,6 +263,8 @@ void DurationController::setup(){
 
 	//add events
     ofAddListener(timeline.events().bangFired, this, &DurationController::bangFired);
+    ofAddListener(timeline.events().trackGainedFocus, this, &DurationController::trackGainedFocus);
+    ofAddListener(timeline.events().pageChanged, this, &DurationController::pageChanged);
 	ofAddListener(ofEvents().exit, this, &DurationController::exit);
 
     //SET UP LISENTERS
@@ -548,6 +574,7 @@ void DurationController::handleOscIn(){
 			oscTrackTypeReceived = "";
 			oscTrackNameReceived = "";
 			oscTrackFilePathReceived = "";
+            oscTrackPageNameReceived = "";
 			//type
 			if(m.getNumArgs() > 0 && m.getArgType(0) == OFXOSC_TYPE_STRING) {
 				oscTrackTypeReceived = m.getArgAsString(0);
@@ -564,6 +591,12 @@ void DurationController::handleOscIn(){
 				oscTrackFilePathReceived = m.getArgAsString(2);
 				receivedAddTrack = true;
 			}
+            //type, name, file path, page name
+            if(m.getNumArgs() > 3 && m.getArgType(3) == OFXOSC_TYPE_STRING)
+            {
+                oscTrackPageNameReceived = m.getArgAsString(3);
+                receivedAddTrack = true;
+            }
 			if(!receivedAddTrack){
 				ofLogError("Duration:OSC") << "Add track failed, incorrectly formatted arguments. \n usage: /duration/addtrack type:string [optional name:string ] [optional filepath:string ]";
 			}
@@ -734,7 +767,7 @@ void DurationController::handleOscOut(){
 		for(int t = 0; t < tracks.size(); t++){
 			ofPtr<ofxTLUIHeader> header = headers[tracks[t]->getName()];
 			if(!header->sendOSC()){
-				continue;
+                continue;
 			}
 			unsigned long trackSampleTime = tracks[t]->getIsPlaying() ? tracks[t]->currentTrackTime() : timelineSampleTime;
 			string trackType = tracks[t]->getTrackType();
@@ -784,7 +817,7 @@ void DurationController::handleOscOut(){
 					}
 				}
 				if(messageValid){
-					m.setAddress(ofFilePath::addLeadingSlash(tracks[t]->getDisplayName()));
+					m.setAddress(ofFilePath::addLeadingSlash(pages[i]->getName()) + ofFilePath::addLeadingSlash(tracks[t]->getDisplayName()));
 					bundle.addMessage(m);
 					numMessages++;
 				}
@@ -793,12 +826,14 @@ void DurationController::handleOscOut(){
 	}
 	//unlock();
 
+
 	//any bangs that came our way this frame send them out too
 	for(int i = 0; i < bangsReceived.size(); i++){
 //		cout << "FOUND BANGS!" << endl;
 		bundle.addMessage(bangsReceived[i]);
 	}
 	numMessages += bangsReceived.size();
+
 	if(numMessages > 0){
 		sender.sendBundle(bundle);
 		refreshAllOscOut = false;
@@ -833,13 +868,28 @@ void DurationController::bangFired(ofxTLBangEventArgs& bang){
         return;
     }
     ofxOscMessage m;
-    m.setAddress( ofFilePath::addLeadingSlash(bang.track->getDisplayName()) );
+    m.setAddress( ofFilePath::addLeadingSlash( timeline.trackNameToPage[bang.track->getName()]->getName() ) + ofFilePath::addLeadingSlash(bang.track->getDisplayName()) );
 
     if(trackType == "Flags"){
         m.addStringArg(bang.flag);
     }
 
 	bangsReceived.push_back(m);
+}
+
+void DurationController::trackGainedFocus(ofxTLTrackEventArgs& args) {
+    map<string,ofPtr<ofxTLUIHeader> >::iterator it = headers.begin();
+    while(it != headers.end()){
+        if (it->second->getAddress() != args.name) {
+            it->second->getAddressTextInput()->setFocus(false);
+        }
+        it++;
+    }
+    renamePage->setFocus(false);
+}
+
+void DurationController::pageChanged(ofxTLPageEventArgs& args) {
+    renamePage->setTextString(args.currentPageName);
 }
 
 //--------------------------------------------------------------
@@ -857,6 +907,28 @@ void DurationController::guiEvent(ofxUIEventArgs &e){
 	        timeline.setCurrentTimeMillis(0);
 		}
     }
+    else if (e.widget == movePageLeft && movePageLeft->getValue() == 1) {
+        timeline.movePage(timeline.getCurrentPageName(), true);
+        needsSave = true;
+    }
+    else if (e.widget == movePageRight && movePageRight->getValue() == 1) {
+        timeline.movePage(timeline.getCurrentPageName(), false);
+        needsSave = true;
+    }
+    else if (name == "RENAME PAGE") {
+        // unfocus headers
+        map<string,ofPtr<ofxTLUIHeader> >::iterator it = headers.begin();
+        while(it != headers.end()){
+            it->second->getAddressTextInput()->setFocus(false);
+            it++;
+        }
+        // set page name
+        ofxUITextInput *ti = (ofxUITextInput *) e.widget;
+        string output = ti->getTextString();
+        timeline.setPageName(output);
+        needsSave = true;
+    }
+
     else if(name == "PLAYPAUSE"){
 		if(!timeline.getIsPlaying()){
 			startPlayback();
@@ -887,6 +959,20 @@ void DurationController::guiEvent(ofxUIEventArgs &e){
 
                 addTrackDropDown->clearSelected();
             }
+        }
+    }
+    else if(name == "ADD PAGE") {
+        if (e.widget == addPage && addPage->getValue() == 1) {
+            char s[5];
+            gen_random(s, 5);
+            timeline.addPage(s, true); // name, make current
+            needsSave = true;
+        }
+    }
+    else if(name == "REM PAGE") {
+        if (e.widget == removePage && removePage->getValue() == 1) {
+            timeline.removePage(timeline.getCurrentPageName());
+            needsSave = true;
         }
     }
     else if(e.widget == projectDropDown){
@@ -1036,7 +1122,7 @@ void DurationController::guiEvent(ofxUIEventArgs &e){
 }
 
 //--------------------------------------------------------------
-ofxTLTrack* DurationController::addTrack(string trackType, string trackName, string xmlFileName){
+ofxTLTrack* DurationController::addTrack(string trackType, string trackName, string xmlFileName, string pageName){
 	ofxTLTrack* newTrack = NULL;
 
 	trackType = ofToLower(trackType);
@@ -1048,6 +1134,10 @@ ofxTLTrack* DurationController::addTrack(string trackType, string trackName, str
 		string uniqueName = timeline.confirmedUniqueName(trackName);
 		xmlFileName = ofToDataPath(settings.path + "/" + uniqueName + "_.xml");
 	}
+
+    if (pageName == "") {
+        pageName = timeline.getCurrentPageName();
+    }
 
 	if(trackType == translation.translateKey("bangs") || trackType == "bangs"){
 		newTrack = timeline.addBangs(trackName, xmlFileName);
@@ -1156,7 +1246,7 @@ void DurationController::update(ofEventArgs& args){
 	if(receivedAddTrack){
 		lock();
 		receivedAddTrack = false;
-		addTrack(oscTrackTypeReceived, oscTrackNameReceived, oscTrackFilePathReceived);
+		addTrack(oscTrackTypeReceived, oscTrackNameReceived, oscTrackFilePathReceived, oscTrackPageNameReceived);
 		unlock();
 	}
 
@@ -1210,21 +1300,6 @@ ofPtr<ofxTLUIHeader> DurationController::getHeaderWithDisplayName(string name){
 //--------------------------------------------------------------
 void DurationController::draw(ofEventArgs& args){
 
-	//go through and draw all the overlay backgrounds to indicate 'hot' track sfor recording
-	ofPushStyle();
-	map<string, ofPtr<ofxTLUIHeader> >::iterator trackit;
-	for(trackit = headers.begin(); trackit != headers.end(); trackit++){
-		//TODO: check to make sure recording is enabled on this track
-		//TODO: find a way to illustrate 'invalid' output sent to this track
-		float timeSinceInput = recordTimer.getAppTimeSeconds() - trackit->second->lastInputReceivedTime;
-		if(timeSinceInput > 0 && timeSinceInput < 1.0){
-			//oscilating red to indicate active
-			ofSetColor(200,20,0,(1-timeSinceInput)*(80 + (20*sin(ofGetElapsedTimef()*8)*.5+.5)));
-			ofRect(trackit->second->getTrack()->getDrawRect());
-		}
-	}
-	ofPopStyle();
-
 	timeline.draw();
 	gui->draw();
 
@@ -1238,6 +1313,36 @@ void DurationController::draw(ofEventArgs& args){
 	}
 	drawTooltips();
 	//drawTooltipDebug();
+
+
+    // disable headers
+    map<string, ofPtr<ofxTLUIHeader> >::iterator trackitDisable;
+    for(trackitDisable = headers.begin(); trackitDisable != headers.end(); trackitDisable++){
+        trackitDisable->second->getGui()->disable();
+        //trackitDisable->second->getTrackHeader()->disable();
+        //trackitDisable->second->getTrackHeader()->getDisplayNameInputField().draw();
+    }
+
+    // enable headers for current page
+    if (headersEnabled) {
+        ofxTLPage* page = timeline.getPage(timeline.getCurrentPageName());
+        if (page != NULL) {
+
+            vector<ofxTLTrack*>& tracks = page->getTracks();
+
+            map<string, ofPtr<ofxTLUIHeader> >::iterator trackit;
+            for (trackit = headers.begin(); trackit != headers.end(); trackit++) {
+                for (int t = 0; t < tracks.size(); t++) {
+                    if (tracks[t]->getName() == trackit->first) {
+                        trackit->second->getGui()->enable();
+                        trackit->second->getGui()->draw();
+                        //trackit->second->getTrackHeader()->enable();
+                        //trackit->second->getTrackHeader()->draw();
+                    }
+                }
+            }
+        }
+    }
 }
 
 //--------------------------------------------------------------
@@ -1251,6 +1356,7 @@ void DurationController::keyPressed(ofKeyEventArgs& keyArgs){
 	}
 
     int key = keyArgs.key;
+
 	if(key == ' '){
 		if(ofGetModifierShiftPressed()){
 			timeline.togglePlaySelectedTrack();
@@ -1268,25 +1374,75 @@ void DurationController::keyPressed(ofKeyEventArgs& keyArgs){
     if(key == 'i'){
 		if(ofGetModifierAltPressed()){
 			timeline.setInPointAtMillis(0);
+            needsSave = true;
 		}
-		else{
+		else if (ofGetModifierControlPressed()) {
 	        timeline.setInPointAtPlayhead();
+            needsSave = true;
 		}
     }
 
     if(key == 'o'){
 		if(ofGetModifierAltPressed()){
 			timeline.setOutPointAtPercent(1.0);
+            needsSave = true;
 		}
-		else{
+		else if (ofGetModifierControlPressed()) {
 	        timeline.setOutPointAtPlayhead();
+            needsSave = true;
 		}
     }
 
+    // collapse all tracks (including focused track)
+    if (key == '<') {
+        timeline.collapseAllTracks();
+    }
+
+    if (key == 0x09) { // horizontal TAB key
+        headersEnabled = !headersEnabled;
+    }
+
+    // move track down
+    if (key == 'd') {
+        if (ofGetModifierControlPressed()) {
+            ofxTLTrack* track = timeline.getPage(timeline.getCurrentPageName())->getFocusedTrack();
+            timeline.getPage(timeline.getCurrentPageName())->moveTrack(track, false);
+            map<string,ofPtr<ofxTLUIHeader> >::iterator it = headers.begin();
+            while(it != headers.end()){
+                ofEventArgs args;
+                it->second->viewWasResized(args);
+                it++;
+            }
+            ofEventArgs args;
+            ofNotifyEvent(timeline.events().viewWasResized, args);
+            needsSave = true;
+        }
+    }
+
+    // move track up
+    if (key == 'u') {
+        if (ofGetModifierControlPressed()) {
+            ofxTLTrack* track = timeline.getPage(timeline.getCurrentPageName())->getFocusedTrack();
+            timeline.getPage(timeline.getCurrentPageName())->moveTrack(track, true);
+            map<string,ofPtr<ofxTLUIHeader> >::iterator it = headers.begin();
+            while(it != headers.end()){
+                ofEventArgs args;
+                it->second->viewWasResized(args);
+                it++;
+            }
+            ofEventArgs args;
+            ofNotifyEvent(timeline.events().viewWasResized, args);
+            needsSave = true;
+        }
+    }
 
 	if(ofGetModifierShortcutKeyPressed() && (key == 's' || key=='s'-96) ){
 		saveProject();
 	}
+
+    if( (key == OF_KEY_RETURN && ofGetModifierAltPressed()) || key == OF_KEY_F11 ) {
+        ofToggleFullscreen();
+    }
 
 }
 
@@ -1435,12 +1591,15 @@ void DurationController::loadProject(string projectPath, string projectName, boo
     for(int p = 0; p < numPages; p++){
         projectSettings.pushTag("page", p);
         string pageName = projectSettings.getValue("name", "defaultPage");
+        /*
         if(p == 0){
             timeline.setPageName(pageName, 0);
         }
         else{
             timeline.addPage(pageName, true);
         }
+        */
+        timeline.addPage(pageName, true);
 
         int numTracks = projectSettings.getNumTags("track");
         for(int i = 0; i < numTracks; i++){
@@ -1451,7 +1610,7 @@ void DurationController::loadProject(string projectPath, string projectName, boo
             string trackFilePath = ofToDataPath(projectPath + "/" + xmlFileName);
 
 			//add the track
-            ofxTLTrack* newTrack = addTrack(trackType, trackName, trackFilePath);
+            ofxTLTrack* newTrack = addTrack(trackType, trackName, trackFilePath, pageName);
 
 			//custom setup
 			if(newTrack != NULL){
@@ -1482,6 +1641,8 @@ void DurationController::loadProject(string projectPath, string projectName, boo
 
 				headerTrack->setSendOSC(projectSettings.getValue("sendOSC", true));
 				headerTrack->setReceiveOSC(projectSettings.getValue("receiveOSC", true));
+
+                headerTrack->setAddress(displayName);
 			}
             projectSettings.popTag(); //track
         }
@@ -1797,4 +1958,18 @@ void DurationController::exit(ofEventArgs& e){
 
 	ofLogNotice("DurationController") << "waiting for thread on exit";
 	waitForThread(true);
+}
+
+
+void DurationController::gen_random(char *s, const int len) {
+    static const char alphanum[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+
+    for (int i = 0; i < len; ++i) {
+        s[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
+    }
+
+    s[len] = 0;
 }

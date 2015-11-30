@@ -43,7 +43,7 @@ void ofApp::setup(){
     ofBackground(.15*255);
     ofEnableAlphaBlending();
     ofEnableSmoothing();
-	ofSetEscapeQuitsApp(false);
+	ofSetEscapeQuitsApp(true); // TODO set false for release
 
 	controller.setup();
 	#ifdef TARGET_OSX
@@ -63,7 +63,6 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
-
 }
 
 //--------------------------------------------------------------

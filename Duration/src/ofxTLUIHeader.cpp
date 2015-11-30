@@ -56,6 +56,7 @@ ofxTLUIHeader::ofxTLUIHeader(){
 	audioNumberOfBins = 256;
 
 	bins = NULL;
+    address = NULL;
 	minDialer = NULL;
 	maxDialer = NULL;
     sendOSCEnable = NULL;
@@ -89,7 +90,23 @@ void ofxTLUIHeader::setTrackHeader(ofxTLTrackHeader* header){
     //gui->setDrawWidgetPadding(true);
 
     gui->setWidgetSpacing(1);
-	gui->setPadding(0);
+	gui->setPadding(3);
+
+    /*
+    ofxUILabelButton* moveUp = new ofxUILabelButton("^", false,0,0,0, OFX_UI_FONT_SMALL);
+    moveUp->setPadding(0);
+    gui->addWidgetRight(moveUp);
+
+    ofxUILabelButton* moveDown = new ofxUILabelButton("v", false,0,0,0, OFX_UI_FONT_SMALL);
+    moveDown->setPadding(0);
+    gui->addWidgetRight(moveDown);
+    */
+
+    address = new ofxUITextInput(getTrack()->getDisplayName(), getTrack()->getDisplayName(), 250, 17, 0, 0, OFX_UI_FONT_SMALL);
+    address->setAutoClear(false);
+    address->setAutoUnfocus(true);
+    gui->addWidgetRight(address);
+
     //switch on track type
 
     trackType = trackHeader->getTrack()->getTrackType();
@@ -136,21 +153,21 @@ void ofxTLUIHeader::setTrackHeader(ofxTLTrackHeader* header){
 	}
 
 	if(trackType == "Bangs" || trackType == "Curves"){
-		receiveOSCEnable = new ofxUIToggle(translation->translateKey("receive osc"), true, 17, 17, 0, 0, OFX_UI_FONT_SMALL);
+		receiveOSCEnable = new ofxUIToggle("RX", true, 17, 17, 0, 0, OFX_UI_FONT_SMALL);
 		receiveOSCEnable->setPadding(1);
-		gui->addWidgetRight(receiveOSCEnable);
+		//gui->addWidgetRight(receiveOSCEnable); // edit stahlnow: hide, not needed now.
 	}
 
 //	if(trackType != "Audio"){ //TODO: audio should send some nice FFT OSC
-		sendOSCEnable = new ofxUIToggle(translation->translateKey("send osc"), true, 17, 17, 0, 0, OFX_UI_FONT_SMALL);
+		sendOSCEnable = new ofxUIToggle("TX", true, 17, 17, 0, 0, OFX_UI_FONT_SMALL);
 		sendOSCEnable->setPadding(1);
-		gui->addWidgetRight(sendOSCEnable);
+		//gui->addWidgetRight(sendOSCEnable); // edit stahlnow: hide, not needed now.
 //	}
 
     //DELETE ME???
     vector<string> deleteTrack;
     deleteTrack.push_back(translation->translateKey("sure?"));
-    ofxUIDropDownList* dropDown = new ofxUIDropDownList(translation->translateKey("delete"), deleteTrack, 0,0,0, OFX_UI_FONT_SMALL);
+    ofxUIDropDownList* dropDown = new ofxUIDropDownList("X", deleteTrack, 0,0,0, OFX_UI_FONT_SMALL);
     dropDown->setAllowMultiple(false);
     dropDown->setAutoClose(true);
     dropDown->setPadding(0); //Tweak to make the drop down small enough
@@ -158,16 +175,18 @@ void ofxTLUIHeader::setTrackHeader(ofxTLTrackHeader* header){
 
     gui->autoSizeToFitWidgets();
 
-    gui->getRect()->y = trackHeader->getDrawRect().y; //TWEAK to get on the header
-	gui->getRect()->x = trackHeader->getTimeline()->getTopRight().x - (gui->getRect()->width + 50);
+    gui->getRect()->y = trackHeader->getDrawRect().y + 1; //TWEAK to get on the header
+	//gui->getRect()->x = trackHeader->getTimeline()->getTopRight().x - (gui->getRect()->width + 50);
+    gui->getRect()->x = trackHeader->getTimeline()->getTopLeft().x + 1;
 
     ofAddListener(trackHeader->events().viewWasResized, this, &ofxTLUIHeader::viewWasResized);
     ofAddListener(gui->newGUIEvent, this, &ofxTLUIHeader::guiEvent);
 }
 
 void ofxTLUIHeader::viewWasResized(ofEventArgs& args){
-    gui->getRect()->y = trackHeader->getDrawRect().y; //TWEAK to get on the header
-	gui->getRect()->x = trackHeader->getTimeline()->getTopRight().x - (gui->getRect()->width + 50);
+    gui->getRect()->y = trackHeader->getDrawRect().y + 1; //TWEAK to get on the header
+	//gui->getRect()->x = trackHeader->getTimeline()->getTopRight().x - (gui->getRect()->width + 50);
+    gui->getRect()->x = trackHeader->getTimeline()->getTopLeft().x + 1;
 }
 
 //void ofxTLUIHeader::setMinFrequency(int frequency){
@@ -260,6 +279,10 @@ void ofxTLUIHeader::setReceiveOSC(bool enable){
 	}
 }
 
+void ofxTLUIHeader::setAddress(string addr) {
+    address->setTextString(addr);
+}
+
 void ofxTLUIHeader::setShouldDelete(bool del){
 	shouldDelete = del;
 	if(shouldDelete){
@@ -290,13 +313,26 @@ string ofxTLUIHeader::getTrackType(){
 	return trackType;
 }
 
+
 void ofxTLUIHeader::guiEvent(ofxUIEventArgs &e){
 //    cout << e.widget->getName() << " hit!" << endl;
 
-	if(e.widget->getName() == ">" && ((ofxUILabelButton*)e.widget)->getValue()){
+    string name = e.widget->getName();
+    int kind = e.getKind();
+
+    if (kind == OFX_UI_WIDGET_TEXTINPUT){
+        ofxUITextInput *ti = (ofxUITextInput *) e.widget;
+        string str = ti->getTextString();
+        str.erase (std::remove (str.begin(), str.end(), ' '), str.end()); // remove all white space
+        getTrack()->setDisplayName(str);
+        modified = true;
+    }
+
+	if(name == ">" && ((ofxUILabelButton*)e.widget)->getValue()){
 		getTrack()->togglePlay();
 	}
-    else if(e.widget->getName() == "min"){
+
+    else if(name == "min"){
         float newMinValue = MIN(minDialer->getValue(), maxDialer->getValue());
         minDialer->setValue(newMinValue);
         ofRange newValueRange = ofRange(newMinValue, maxDialer->getValue());
@@ -304,7 +340,7 @@ void ofxTLUIHeader::guiEvent(ofxUIEventArgs &e){
         track->setValueRange(newValueRange);
 		modified = true;
     }
-	else if(e.widget->getName() == "max"){
+	else if(name == "max"){
         float newMaxValue = MAX(minDialer->getValue(), maxDialer->getValue());
         maxDialer->setValue(newMaxValue);
         ofRange newValueRange = ofRange(minDialer->getValue(), newMaxValue);
@@ -312,7 +348,7 @@ void ofxTLUIHeader::guiEvent(ofxUIEventArgs &e){
         track->setValueRange(newValueRange);
 		modified = true;
     }
-    else if(e.widget->getName() == translation->translateKey("delete")){
+    else if(name == translation->translateKey("X")){
         ofxUIDropDownList* deleteDropDown = (ofxUIDropDownList*)e.widget;
         if(deleteDropDown->isOpen()){
             trackHeader->getTrack()->disable();

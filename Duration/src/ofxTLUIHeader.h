@@ -41,59 +41,65 @@ class ofxTLUIHeader {
   public:
     ofxTLUIHeader();
     virtual ~ofxTLUIHeader();
-    
+
     void setTrackHeader(ofxTLTrackHeader* trackHeader);
-	virtual void viewWasResized(ofEventArgs& args); 
+	virtual void viewWasResized(ofEventArgs& args);
     virtual void guiEvent(ofxUIEventArgs &e);
-    
+
 	virtual bool getShouldDelete();
 	virtual void setShouldDelete(bool del);
-	
+
     virtual bool sendOSC();
     virtual void setSendOSC(bool enable);
     virtual bool receiveOSC();
     virtual void setReceiveOSC(bool enable);
 
+    virtual void setAddress(string address);
+    inline string getAddress() { return address->getTextString(); }
+    inline ofxUITextInput* getAddressTextInput() { return address; }
+
 //	string getPalettePath();
-	
+
 	//just for drawing the red receiver background
 	float lastInputReceivedTime;
-	
+
 	//remove duplicate sending and receiving
 	bool hasReceivedValue;
 	bool hasSentValue;
-	
+
 	//different value types for tracking last values sent over OSC
 	float lastFloatSent;
 	bool lastBoolSent;
 	ofColor lastColorSent;
-	
+
 	//only receiving floats for now
 	float lastValueReceived;
-	
+
 	ofxTLTrack* getTrack();
 	ofxTLTrackHeader* getTrackHeader();
 	string getTrackType();
 	ofxLocalization* translation;
 	ofxUICanvas* getGui();
 	bool getModified();
-	
+
 //	void setNumberOfbins(int bins);
 //	int getNumberOfBins();
-    
+
 //    void setMinFrequency(int frequency);
 //    int getMinFrequency();
 //    void setBandsPerOctave(int bands);
 //    int getBandsPerOctave();
-    
+
 	void setValueRange(ofRange range);
 	void setValueMin(float min);
 	void setValueMax(float max);
-	
+
   protected:
-    
+
     ofxUICanvas* gui;
     ofxTLTrackHeader* trackHeader;
+
+    ofxUITextInput* address;
 	ofxUINumberDialer* minDialer;
 	ofxUINumberDialer* maxDialer;
 	ofxUITextInput* bins;
@@ -101,12 +107,12 @@ class ofxTLUIHeader {
 	ofxUILabelButton* audioClip;
 	ofxUILabelButton* resetRange;
 	//Delay dialer?
-	
+
     ofxUIToggle* sendOSCEnable;
 	ofxUIToggle* receiveOSCEnable;
 	bool resizeEventsEnabled;
 	int audioNumberOfBins;
-	
+
 	string trackType;
     bool shouldDelete;
 	bool modified;

@@ -91,7 +91,7 @@ class DurationController : public ofThread  {
 	void guiEvent(ofxUIEventArgs& e);
     void exit(ofEventArgs& e);
 
-	ofxTLTrack* addTrack(string trackType, string trackName = "", string xmlFileName = "");
+	ofxTLTrack* addTrack(string trackType, string trackName = "", string xmlFileName = "", string pageName = "");
 
     //control elements
     ofxUIDropDownList* projectDropDown;
@@ -118,6 +118,14 @@ class DurationController : public ofThread  {
     vector<string> trackTypes;
     ofxUIDropDownList* addTrackDropDown;
 
+    ofxUILabelButton* addPage;
+    ofxUILabelButton* removePage;
+
+    ofxUILabelButton* movePageLeft;
+    ofxUILabelButton* movePageRight;
+
+    ofxUITextInput* renamePage;
+
     string defaultProjectDirectoryPath;
 	DurationProjectSettings settings;
 
@@ -135,7 +143,9 @@ class DurationController : public ofThread  {
   protected:
 	ofxTimeline timeline;
     void bangFired(ofxTLBangEventArgs& bang);
-	vector<string> trackAddresses;
+    void trackGainedFocus(ofxTLTrackEventArgs& args);
+    void pageChanged(ofxTLPageEventArgs& args);
+	//vector<string> trackAddresses;
 
 	bool shouldStartPlayback;
 	void startPlayback();
@@ -184,10 +194,16 @@ class DurationController : public ofThread  {
 	string oscTrackTypeReceived;
 	string oscTrackNameReceived;
 	string oscTrackFilePathReceived;
+    string oscTrackPageNameReceived;
 
 	bool receivedPaletteToLoad;
 	ofxTLColorTrack* paletteTrack;
 	string palettePath;
+
+private:
+    void gen_random(char *s, const int len);
+
+    bool headersEnabled;
 
 };
 
