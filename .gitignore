@@ -65,6 +65,7 @@ releases/*
 *.exe
 *.pdb
 *.dll
+*.opendb
 *.opensdf
 *.sdf
 *.suo
