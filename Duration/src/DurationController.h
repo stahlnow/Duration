@@ -39,7 +39,7 @@
 #include "ofxTLUIHeader.h"
 #include "ofxUI.h"
 #include "ofxLocalization.h"
-#include "ofxFTGLFont.h"
+//#include "ofxFTGLFont.h"
 //#include "ofxTLAudioTrack.h"
 
 typedef struct {
@@ -187,7 +187,7 @@ class DurationController : public ofThread  {
 
 	float oscFrequency; // 1 / BUNDLES PER SECOND * 1000
 	unsigned long lastOSCBundleSent;
-	ofxFTGLFont tooltipFont;
+	//ofxFTGLFont tooltipFont;
 	bool needsSave;
 
 	bool receivedAddTrack;
