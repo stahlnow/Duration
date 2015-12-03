@@ -1,4 +1,3 @@
-ofxFTGL
 ofxLocalization
 ofxMSATimer
 ofxOsc

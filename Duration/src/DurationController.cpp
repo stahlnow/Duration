@@ -141,10 +141,10 @@ void DurationController::setup(){
 
 #ifdef TARGET_WIN32
 	timeline.setupFont("GUI/NewMedia Fett.ttf", 9);
-	tooltipFont.loadFont("GUI/NewMedia Fett.ttf", 7);
+	//tooltipFont.loadFont("GUI/NewMedia Fett.ttf", 7);
 #else
 	timeline.setupFont("GUI/NewMedia Fett.ttf", 9);
-	tooltipFont.loadFont("GUI/NewMedia Fett.ttf", 7);
+	//tooltipFont.loadFont("GUI/NewMedia Fett.ttf", 7);
 #endif
 	//setup timeline
 	timeline.setup();
@@ -1935,7 +1935,7 @@ void DurationController::createTooltips(){
 }
 
 void DurationController::drawTooltips(){
-
+/*
 	ofVec2f mousepoint(ofGetMouseX(), ofGetMouseY());
 	for(int i = 0; i < tooltips.size(); i++){
 		if(tooltips[i].sourceRect.inside(mousepoint)){
@@ -1944,9 +1944,11 @@ void DurationController::drawTooltips(){
 								   tooltips[i].displayPoint.y);
 		}
 	}
+*/
 }
 
 void DurationController::drawTooltipDebug(){
+    /*
 	//draw tool tip position finder
 	tooltipFont.drawString("("+ofToString(ofGetMouseX())+","+ofToString(ofGetMouseY())+")", ofGetMouseX(), ofGetMouseY());
 	//draw tooltip debug balloons
@@ -1963,6 +1965,7 @@ void DurationController::drawTooltipDebug(){
 		tooltipFont.drawString(tooltips[i].text, tooltips[i].sourceRect.x+5,tooltips[i].sourceRect.y+10);
 	}
 	ofPopStyle();
+    */
 }
 
 void DurationController::exit(ofEventArgs& e){
