@@ -104,7 +104,7 @@
 #
 #   Note: Leave a leading space when adding list items with the += operator
 ################################################################################
-PROJECT_CFLAGS += -w
+PROJECT_CFLAGS += -w -std=gnu++11
 
 ################################################################################
 # PROJECT OPTIMIZATION CFLAGS
