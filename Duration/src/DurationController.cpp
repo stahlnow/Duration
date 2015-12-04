@@ -115,7 +115,7 @@ void DurationController::setup(){
     projects.push_back(translation.translateKey("open project..."));
 
 #ifdef TARGET_WIN32
-    defaultProjectDirectoryPath = ofToDataPath(ofFilePath::getUserHomeDir() + "\\Documents\\Duration\\");
+	defaultProjectDirectoryPath = ofToDataPath(ofFilePath::getUserHomeDir() + "\\Documents\\Duration\\");
 #else
     defaultProjectDirectoryPath = ofToDataPath(ofFilePath::getUserHomeDir() + "/Documents/Duration/");
 #endif
@@ -140,7 +140,7 @@ void DurationController::setup(){
     }
 
 #ifdef TARGET_WIN32
-	timeline.setupFont("GUI/NewMedia Fett.ttf", 9);
+	timeline.setupFont("GUI/mplus-1c-regular.ttf", 9);
 	//tooltipFont.loadFont("GUI/NewMedia Fett.ttf", 7);
 #else
 	timeline.setupFont("GUI/NewMedia Fett.ttf", 9);
@@ -282,7 +282,7 @@ void DurationController::setup(){
         }
     }
     else {
-//        cout << "Loading sample project " << defaultProjectDirectoryPath << endl;
+        cout << "Loading sample project " << defaultProjectDirectoryPath << endl;
         loadProject(ofToDataPath(defaultProjectDirectoryPath+"Sample Project"), "Sample Project", true);
     }
 
@@ -967,9 +967,7 @@ void DurationController::guiEvent(ofxUIEventArgs &e){
     }
     else if(name == "ADD PAGE") {
         if (e.widget == addPage && addPage->getValue() == 1) {
-            char s[5];
-            gen_random(s, 5);
-            timeline.addPage(s, true); // name, make current
+            timeline.addPage(gen_random(5), true); // name, make current
             needsSave = true;
         }
     }
@@ -1360,6 +1358,14 @@ void DurationController::keyPressed(ofKeyEventArgs& keyArgs){
         return;
     }
 
+	map<string, ofPtr<ofxTLUIHeader> >::iterator it = headers.begin();
+	while (it != headers.end()) {
+		if (it->second->getGui()->hasKeyboardFocus()) {
+			return;
+		}
+		it++;
+	}
+
 	if(gui->hasKeyboardFocus()){
 		return;
 	}
@@ -1385,7 +1391,7 @@ void DurationController::keyPressed(ofKeyEventArgs& keyArgs){
 			timeline.setInPointAtMillis(0);
             needsSave = true;
 		}
-		else if (ofGetModifierControlPressed()) {
+		else {
 	        timeline.setInPointAtPlayhead();
             needsSave = true;
 		}
@@ -1396,7 +1402,7 @@ void DurationController::keyPressed(ofKeyEventArgs& keyArgs){
 			timeline.setOutPointAtPercent(1.0);
             needsSave = true;
 		}
-		else if (ofGetModifierControlPressed()) {
+		else {
 	        timeline.setOutPointAtPlayhead();
             needsSave = true;
 		}
@@ -1413,36 +1419,32 @@ void DurationController::keyPressed(ofKeyEventArgs& keyArgs){
 
     // move track down
     if (key == 'd') {
-        if (ofGetModifierControlPressed()) {
-            ofxTLTrack* track = timeline.getPage(timeline.getCurrentPageName())->getFocusedTrack();
-            timeline.getPage(timeline.getCurrentPageName())->moveTrack(track, false);
-            map<string,ofPtr<ofxTLUIHeader> >::iterator it = headers.begin();
-            while(it != headers.end()){
-                ofEventArgs args;
-                it->second->viewWasResized(args);
-                it++;
-            }
+        ofxTLTrack* track = timeline.getPage(timeline.getCurrentPageName())->getFocusedTrack();
+        timeline.getPage(timeline.getCurrentPageName())->moveTrack(track, false);
+        map<string,ofPtr<ofxTLUIHeader> >::iterator it = headers.begin();
+        while(it != headers.end()){
             ofEventArgs args;
-            ofNotifyEvent(timeline.events().viewWasResized, args);
-            needsSave = true;
+            it->second->viewWasResized(args);
+            it++;
         }
+        ofEventArgs args;
+        ofNotifyEvent(timeline.events().viewWasResized, args);
+        needsSave = true;
     }
 
     // move track up
     if (key == 'u') {
-        if (ofGetModifierControlPressed()) {
-            ofxTLTrack* track = timeline.getPage(timeline.getCurrentPageName())->getFocusedTrack();
-            timeline.getPage(timeline.getCurrentPageName())->moveTrack(track, true);
-            map<string,ofPtr<ofxTLUIHeader> >::iterator it = headers.begin();
-            while(it != headers.end()){
-                ofEventArgs args;
-                it->second->viewWasResized(args);
-                it++;
-            }
+        ofxTLTrack* track = timeline.getPage(timeline.getCurrentPageName())->getFocusedTrack();
+        timeline.getPage(timeline.getCurrentPageName())->moveTrack(track, true);
+        map<string,ofPtr<ofxTLUIHeader> >::iterator it = headers.begin();
+        while(it != headers.end()){
             ofEventArgs args;
-            ofNotifyEvent(timeline.events().viewWasResized, args);
-            needsSave = true;
+            it->second->viewWasResized(args);
+            it++;
         }
+        ofEventArgs args;
+        ofNotifyEvent(timeline.events().viewWasResized, args);
+        needsSave = true;
     }
 
 	if(ofGetModifierShortcutKeyPressed() && (key == 's' || key=='s'-96) ){
@@ -1980,15 +1982,17 @@ void DurationController::exit(ofEventArgs& e){
 }
 
 
-void DurationController::gen_random(char *s, const int len) {
-    static const char alphanum[] =
-        "0123456789"
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        "abcdefghijklmnopqrstuvwxyz";
-
-    for (int i = 0; i < len; ++i) {
-        s[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
-    }
-
-    s[len] = 0;
+std::string DurationController::gen_random(size_t length) {
+	auto randchar = []() -> char
+	{
+		const char charset[] =
+			"0123456789"
+			"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+			"abcdefghijklmnopqrstuvwxyz";
+		const size_t max_index = (sizeof(charset) - 1);
+		return charset[rand() % max_index];
+	};
+	std::string str(length, 0);
+	std::generate_n(str.begin(), length, randchar);
+	return str;
 }

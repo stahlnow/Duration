@@ -201,7 +201,7 @@ class DurationController : public ofThread  {
 	string palettePath;
 
 private:
-    void gen_random(char *s, const int len);
+	std::string gen_random(size_t length);
 
     bool headersEnabled;
 
