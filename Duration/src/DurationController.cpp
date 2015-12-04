@@ -94,7 +94,7 @@ bool DurationController::isInterfaceEnabled(){
 void DurationController::setup(){
 
 	#ifdef TARGET_WIN32
-	FreeConsole();
+	//FreeConsole();
 	#endif
 	if(!translation.load("languageFile.csv")){
 		ofLogError("DurationController::setup") << "error setting up translation, unpredictable stuff will happen" << endl;
