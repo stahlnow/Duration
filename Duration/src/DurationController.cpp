@@ -1488,7 +1488,7 @@ void DurationController::keyPressed(ofKeyEventArgs& keyArgs){
     }
 
     if (key == '1') {
-        if(ofGetModifierAltPressed()) {
+        if(ofGetModifierShortcutKeyPressed()) {
             loops[0][0] = timeline.getInTimeInSeconds();
             loops[0][1] = timeline.getOutTimeInSeconds();
             needsSave = true;
@@ -1500,7 +1500,7 @@ void DurationController::keyPressed(ofKeyEventArgs& keyArgs){
         }
     }
     if (key == '2') {
-        if(ofGetModifierAltPressed()) {
+        if(ofGetModifierShortcutKeyPressed()) {
             loops[1][0] = timeline.getInTimeInSeconds();
             loops[1][1] = timeline.getOutTimeInSeconds();
             needsSave = true;
@@ -1512,7 +1512,7 @@ void DurationController::keyPressed(ofKeyEventArgs& keyArgs){
         }
     }
     if (key == '3') {
-        if(ofGetModifierAltPressed()) {
+        if(ofGetModifierShortcutKeyPressed()) {
             loops[2][0] = timeline.getInTimeInSeconds();
             loops[2][1] = timeline.getOutTimeInSeconds();
             needsSave = true;
@@ -1524,7 +1524,7 @@ void DurationController::keyPressed(ofKeyEventArgs& keyArgs){
         }
     }
     if (key == '4') {
-        if(ofGetModifierAltPressed()) {
+        if(ofGetModifierShortcutKeyPressed()) {
             loops[3][0] = timeline.getInTimeInSeconds();
             loops[3][1] = timeline.getOutTimeInSeconds();
             needsSave = true;
@@ -1536,7 +1536,7 @@ void DurationController::keyPressed(ofKeyEventArgs& keyArgs){
         }
     }
     if (key == '5') {
-        if(ofGetModifierAltPressed()) {
+        if(ofGetModifierShortcutKeyPressed()) {
             loops[4][0] = timeline.getInTimeInSeconds();
             loops[4][1] = timeline.getOutTimeInSeconds();
             needsSave = true;
@@ -1548,7 +1548,7 @@ void DurationController::keyPressed(ofKeyEventArgs& keyArgs){
         }
     }
     if (key == '6') {
-        if(ofGetModifierAltPressed()) {
+        if(ofGetModifierShortcutKeyPressed()) {
             loops[5][0] = timeline.getInTimeInSeconds();
             loops[5][1] = timeline.getOutTimeInSeconds();
             needsSave = true;
@@ -1560,7 +1560,7 @@ void DurationController::keyPressed(ofKeyEventArgs& keyArgs){
         }
     }
     if (key == '7') {
-        if(ofGetModifierAltPressed()) {
+        if(ofGetModifierShortcutKeyPressed()) {
             loops[6][0] = timeline.getInTimeInSeconds();
             loops[6][1] = timeline.getOutTimeInSeconds();
             needsSave = true;
@@ -1572,7 +1572,7 @@ void DurationController::keyPressed(ofKeyEventArgs& keyArgs){
         }
     }
     if (key == '8') {
-        if(ofGetModifierAltPressed()) {
+        if(ofGetModifierShortcutKeyPressed()) {
             loops[7][0] = timeline.getInTimeInSeconds();
             loops[7][1] = timeline.getOutTimeInSeconds();
             needsSave = true;
@@ -1584,7 +1584,7 @@ void DurationController::keyPressed(ofKeyEventArgs& keyArgs){
         }
     }
     if (key == '9') {
-        if(ofGetModifierAltPressed()) {
+        if(ofGetModifierShortcutKeyPressed()) {
             loops[8][0] = timeline.getInTimeInSeconds();
             loops[8][1] = timeline.getOutTimeInSeconds();
             needsSave = true;
@@ -1596,7 +1596,7 @@ void DurationController::keyPressed(ofKeyEventArgs& keyArgs){
         }
     }
     if (key == '0') {
-        if(ofGetModifierAltPressed()) {
+        if(ofGetModifierShortcutKeyPressed()) {
             loops[9][0] = timeline.getInTimeInSeconds();
             loops[9][1] = timeline.getOutTimeInSeconds();
             needsSave = true;
