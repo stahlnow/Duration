@@ -48,6 +48,13 @@ DurationController::DurationController(){
 	//audioTrack = NULL;
 
     headersEnabled = true;
+
+    // add loops
+    loops = vector<vector<float>> (10, vector<float>(2, 0.0));
+    for (int i = 0; i < 10; i++) {
+        loops[i][0] = (i+1)*2;
+        loops[i][1] = ((i+1)*2) + 2;
+    }
 }
 
 DurationController::~DurationController(){
@@ -201,6 +208,36 @@ void DurationController::setup(){
     gui->addWidgetEastOf(movePageLeft, "RENAME PAGE");
     movePageRight = new ofxUILabelButton(">", false, DROP_DOWN_WIDTH/4, 16, 0, 0, OFX_UI_FONT_MEDIUM, false);
     gui->addWidgetEastOf(movePageRight, "<");
+
+    loop01 = new ofxUILabelButton("01", false, DROP_DOWN_WIDTH/4, 16, 0, 0, OFX_UI_FONT_MEDIUM, false);
+    gui->addWidgetEastOf(loop01, ">");
+
+    loop02 = new ofxUILabelButton("02", false, DROP_DOWN_WIDTH/4, 16, 0, 0, OFX_UI_FONT_MEDIUM, false);
+    gui->addWidgetEastOf(loop02, "01");
+
+    loop03 = new ofxUILabelButton("03", false, DROP_DOWN_WIDTH/4, 16, 0, 0, OFX_UI_FONT_MEDIUM, false);
+    gui->addWidgetEastOf(loop03, "02");
+
+    loop04 = new ofxUILabelButton("04", false, DROP_DOWN_WIDTH/4, 16, 0, 0, OFX_UI_FONT_MEDIUM, false);
+    gui->addWidgetEastOf(loop04, "03");
+
+    loop05 = new ofxUILabelButton("05", false, DROP_DOWN_WIDTH/4, 16, 0, 0, OFX_UI_FONT_MEDIUM, false);
+    gui->addWidgetEastOf(loop05, "04");
+
+    loop06 = new ofxUILabelButton("06", false, DROP_DOWN_WIDTH/4, 16, 0, 0, OFX_UI_FONT_MEDIUM, false);
+    gui->addWidgetEastOf(loop06, "05");
+
+    loop07 = new ofxUILabelButton("07", false, DROP_DOWN_WIDTH/4, 16, 0, 0, OFX_UI_FONT_MEDIUM, false);
+    gui->addWidgetEastOf(loop07, "06");
+
+    loop08 = new ofxUILabelButton("08", false, DROP_DOWN_WIDTH/4, 16, 0, 0, OFX_UI_FONT_MEDIUM, false);
+    gui->addWidgetEastOf(loop08, "07");
+
+    loop09 = new ofxUILabelButton("09", false, DROP_DOWN_WIDTH/4, 16, 0, 0, OFX_UI_FONT_MEDIUM, false);
+    gui->addWidgetEastOf(loop09, "08");
+
+    loop10 = new ofxUILabelButton("10", false, DROP_DOWN_WIDTH/4, 16, 0, 0, OFX_UI_FONT_MEDIUM, false);
+    gui->addWidgetEastOf(loop10, "09");
 
 
     saveButton = new ofxUIMultiImageButton(32, 32, false, "GUI/save_.png", "SAVE");
@@ -1011,6 +1048,48 @@ void DurationController::guiEvent(ofxUIEventArgs &e){
         timeline.setLoopType(loopToggle->getValue() ? OF_LOOP_NORMAL : OF_LOOP_NONE);
 		needsSave = true;
     }
+
+    else if(e.widget == loop01) {
+        timeline.setInPointAtSeconds(loops[0][0]);
+        timeline.setOutPointAtSeconds(loops[0][1]);
+    }
+    else if(e.widget == loop02) {
+        timeline.setInPointAtSeconds(loops[1][0]);
+        timeline.setOutPointAtSeconds(loops[1][1]);
+    }
+    else if(e.widget == loop03) {
+        timeline.setInPointAtSeconds(loops[2][0]);
+        timeline.setOutPointAtSeconds(loops[2][1]);
+    }
+    else if(e.widget == loop04) {
+        timeline.setInPointAtSeconds(loops[3][0]);
+        timeline.setOutPointAtSeconds(loops[3][1]);
+    }
+    else if(e.widget == loop05) {
+        timeline.setInPointAtSeconds(loops[4][0]);
+        timeline.setOutPointAtSeconds(loops[4][1]);
+    }
+    else if(e.widget == loop06) {
+        timeline.setInPointAtSeconds(loops[5][0]);
+        timeline.setOutPointAtSeconds(loops[5][1]);
+    }
+    else if(e.widget == loop07) {
+        timeline.setInPointAtSeconds(loops[6][0]);
+        timeline.setOutPointAtSeconds(loops[6][1]);
+    }
+    else if(e.widget == loop08) {
+        timeline.setInPointAtSeconds(loops[7][0]);
+        timeline.setOutPointAtSeconds(loops[7][1]);
+    }
+    else if(e.widget == loop09) {
+        timeline.setInPointAtSeconds(loops[8][0]);
+        timeline.setOutPointAtSeconds(loops[8][1]);
+    }
+    else if(e.widget == loop10) {
+        timeline.setInPointAtSeconds(loops[9][0]);
+        timeline.setOutPointAtSeconds(loops[9][1]);
+    }
+
     //BPM
 	else if(e.widget == bpmDialer){
 		if(settings.bpm != bpmDialer->getValue()){
@@ -1408,6 +1487,127 @@ void DurationController::keyPressed(ofKeyEventArgs& keyArgs){
 		}
     }
 
+    if (key == '1') {
+        if(ofGetModifierAltPressed()) {
+            loops[0][0] = timeline.getInTimeInSeconds();
+            loops[0][1] = timeline.getOutTimeInSeconds();
+            needsSave = true;
+        } else {
+            timeline.setInPointAtSeconds(loops[0][0]);
+            timeline.setOutPointAtSeconds(loops[0][1]);
+            timeline.setInPointAtSeconds(loops[0][0]);
+            timeline.setOutPointAtSeconds(loops[0][1]);
+        }
+    }
+    if (key == '2') {
+        if(ofGetModifierAltPressed()) {
+            loops[1][0] = timeline.getInTimeInSeconds();
+            loops[1][1] = timeline.getOutTimeInSeconds();
+            needsSave = true;
+        } else {
+            timeline.setInPointAtSeconds(loops[1][0]);
+            timeline.setOutPointAtSeconds(loops[1][1]);
+            timeline.setInPointAtSeconds(loops[1][0]);
+            timeline.setOutPointAtSeconds(loops[1][1]);
+        }
+    }
+    if (key == '3') {
+        if(ofGetModifierAltPressed()) {
+            loops[2][0] = timeline.getInTimeInSeconds();
+            loops[2][1] = timeline.getOutTimeInSeconds();
+            needsSave = true;
+        } else {
+            timeline.setInPointAtSeconds(loops[2][0]);
+            timeline.setOutPointAtSeconds(loops[2][1]);
+            timeline.setInPointAtSeconds(loops[2][0]);
+            timeline.setOutPointAtSeconds(loops[2][1]);
+        }
+    }
+    if (key == '4') {
+        if(ofGetModifierAltPressed()) {
+            loops[3][0] = timeline.getInTimeInSeconds();
+            loops[3][1] = timeline.getOutTimeInSeconds();
+            needsSave = true;
+        } else {
+            timeline.setInPointAtSeconds(loops[3][0]);
+            timeline.setOutPointAtSeconds(loops[3][1]);
+            timeline.setInPointAtSeconds(loops[3][0]);
+            timeline.setOutPointAtSeconds(loops[3][1]);
+        }
+    }
+    if (key == '5') {
+        if(ofGetModifierAltPressed()) {
+            loops[4][0] = timeline.getInTimeInSeconds();
+            loops[4][1] = timeline.getOutTimeInSeconds();
+            needsSave = true;
+        } else {
+            timeline.setInPointAtSeconds(loops[4][0]);
+            timeline.setOutPointAtSeconds(loops[4][1]);
+            timeline.setInPointAtSeconds(loops[4][0]);
+            timeline.setOutPointAtSeconds(loops[4][1]);
+        }
+    }
+    if (key == '6') {
+        if(ofGetModifierAltPressed()) {
+            loops[5][0] = timeline.getInTimeInSeconds();
+            loops[5][1] = timeline.getOutTimeInSeconds();
+            needsSave = true;
+        } else {
+            timeline.setInPointAtSeconds(loops[5][0]);
+            timeline.setOutPointAtSeconds(loops[5][1]);
+            timeline.setInPointAtSeconds(loops[5][0]);
+            timeline.setOutPointAtSeconds(loops[5][1]);
+        }
+    }
+    if (key == '7') {
+        if(ofGetModifierAltPressed()) {
+            loops[6][0] = timeline.getInTimeInSeconds();
+            loops[6][1] = timeline.getOutTimeInSeconds();
+            needsSave = true;
+        } else {
+            timeline.setInPointAtSeconds(loops[6][0]);
+            timeline.setOutPointAtSeconds(loops[6][1]);
+            timeline.setInPointAtSeconds(loops[6][0]);
+            timeline.setOutPointAtSeconds(loops[6][1]);
+        }
+    }
+    if (key == '8') {
+        if(ofGetModifierAltPressed()) {
+            loops[7][0] = timeline.getInTimeInSeconds();
+            loops[7][1] = timeline.getOutTimeInSeconds();
+            needsSave = true;
+        } else {
+            timeline.setInPointAtSeconds(loops[7][0]);
+            timeline.setOutPointAtSeconds(loops[7][1]);
+            timeline.setInPointAtSeconds(loops[7][0]);
+            timeline.setOutPointAtSeconds(loops[7][1]);
+        }
+    }
+    if (key == '9') {
+        if(ofGetModifierAltPressed()) {
+            loops[8][0] = timeline.getInTimeInSeconds();
+            loops[8][1] = timeline.getOutTimeInSeconds();
+            needsSave = true;
+        } else {
+            timeline.setInPointAtSeconds(loops[8][0]);
+            timeline.setOutPointAtSeconds(loops[8][1]);
+            timeline.setInPointAtSeconds(loops[8][0]);
+            timeline.setOutPointAtSeconds(loops[8][1]);
+        }
+    }
+    if (key == '0') {
+        if(ofGetModifierAltPressed()) {
+            loops[9][0] = timeline.getInTimeInSeconds();
+            loops[9][1] = timeline.getOutTimeInSeconds();
+            needsSave = true;
+        } else {
+            timeline.setInPointAtSeconds(loops[9][0]);
+            timeline.setOutPointAtSeconds(loops[9][1]);
+            timeline.setInPointAtSeconds(loops[9][0]);
+            timeline.setOutPointAtSeconds(loops[9][1]);
+        }
+    }
+
     // collapse all tracks (including focused track)
     if (key == '<') {
         timeline.collapseAllTracks();
@@ -1680,11 +1880,24 @@ void DurationController::loadProject(string projectPath, string projectName, boo
     timeline.setInPointAtTimecode(projectSettings.getValue("inpoint", "00:00:00:000"));
     timeline.setOutPointAtTimecode(projectSettings.getValue("outpoint", "00:00:00:000"));
 
-    bool loops = projectSettings.getValue("loop", true);
-    timeline.setLoopType(loops ? OF_LOOP_NORMAL : OF_LOOP_NONE);
+    bool looping = projectSettings.getValue("loop", true);
+    timeline.setLoopType(looping ? OF_LOOP_NORMAL : OF_LOOP_NONE);
 
     durationLabel->setTextString(timeline.getDurationInTimecode());
-    loopToggle->setValue( loops );
+    loopToggle->setValue( looping );
+
+
+    // loops
+    projectSettings.pushTag("loops");
+    int numLoops = projectSettings.getNumTags("loop");
+    for(int l = 0; l < numLoops; l++){
+        projectSettings.pushTag("loop", l);
+        loops[l][0] = projectSettings.getValue("in",  (l+1)*2 );
+        loops[l][1] = projectSettings.getValue("out", ((l+1)*2) + 2);
+        projectSettings.popTag();
+    }
+    projectSettings.popTag(); // loops
+
     projectSettings.popTag(); //timeline settings;
 
     DurationProjectSettings newSettings;
@@ -1792,6 +2005,18 @@ void DurationController::saveProject(){
     projectSettings.addValue("inpoint", timeline.getInPointTimecode());
     projectSettings.addValue("outpoint", timeline.getOutPointTimecode());
     projectSettings.addValue("loop", timeline.getLoopType() == OF_LOOP_NORMAL);
+
+    projectSettings.addTag("loops");
+    projectSettings.pushTag("loops");
+    for (int l = 0; l < loops.size(); l++) {
+        projectSettings.addTag("loop");
+        projectSettings.pushTag("loop", l);
+        projectSettings.addValue("in", loops[l][0]);
+        projectSettings.addValue("out", loops[l][1]);
+        projectSettings.popTag(); // loop
+    }
+    projectSettings.popTag(); // loops
+
 	projectSettings.popTag();// timelineSettings
 
     //UI SETTINGS

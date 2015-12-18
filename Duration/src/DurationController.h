@@ -124,6 +124,17 @@ class DurationController : public ofThread  {
     ofxUILabelButton* movePageLeft;
     ofxUILabelButton* movePageRight;
 
+    ofxUILabelButton* loop01;
+    ofxUILabelButton* loop02;
+    ofxUILabelButton* loop03;
+    ofxUILabelButton* loop04;
+    ofxUILabelButton* loop05;
+    ofxUILabelButton* loop06;
+    ofxUILabelButton* loop07;
+    ofxUILabelButton* loop08;
+    ofxUILabelButton* loop09;
+    ofxUILabelButton* loop10;
+
     ofxUITextInput* renamePage;
 
     string defaultProjectDirectoryPath;
@@ -199,6 +210,8 @@ class DurationController : public ofThread  {
 	bool receivedPaletteToLoad;
 	ofxTLColorTrack* paletteTrack;
 	string palettePath;
+
+    vector <vector<float>> loops;
 
 private:
 	std::string gen_random(size_t length);
