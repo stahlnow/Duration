@@ -1892,8 +1892,9 @@ void DurationController::loadProject(string projectPath, string projectName, boo
     int numLoops = projectSettings.getNumTags("loop");
     for(int l = 0; l < numLoops; l++){
         projectSettings.pushTag("loop", l);
-        loops[l][0] = projectSettings.getValue("in",  (l+1)*2 );
-        loops[l][1] = projectSettings.getValue("out", ((l+1)*2) + 2);
+        loops[l][0] = projectSettings.getValue("in",  (float)((l+1.0)*2.0 ));
+        loops[l][1] = projectSettings.getValue("out", (float)(((l+1.0)*2.0) + 2.0));
+        ofLogError() << l << ":" << loops[l][0] << "," << loops[l][1];
         projectSettings.popTag();
     }
     projectSettings.popTag(); // loops
