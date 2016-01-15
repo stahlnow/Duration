@@ -1485,7 +1485,7 @@ void DurationController::keyPressed(ofKeyEventArgs& keyArgs){
     // create loop
     if (key == 'l') {
         if(ofGetModifierShortcutKeyPressed()){
-            timeline.addLoop(ofFloatRange(timeline.getPercentComplete(), timeline.getPercentComplete()+0.1), "loop");
+            timeline.addLoop(ofFloatRange(timeline.getPercentComplete(), timeline.getPercentComplete()+0.01), "loop");
             needsSave = true;
         }
     }
