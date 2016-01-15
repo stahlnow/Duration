@@ -48,13 +48,6 @@ DurationController::DurationController(){
 	//audioTrack = NULL;
 
     headersEnabled = true;
-
-    // add loops
-    loops = vector<vector<float>> (10, vector<float>(2, 0.0));
-    for (int i = 0; i < 10; i++) {
-        loops[i][0] = (i+1)*2;
-        loops[i][1] = ((i+1)*2) + 2;
-    }
 }
 
 DurationController::~DurationController(){
@@ -67,6 +60,7 @@ void DurationController::enableInterface(){
 		ofAddListener(ofEvents().update, this, &DurationController::update);
 		ofAddListener(ofEvents().draw, this, &DurationController::draw);
 		ofAddListener(ofEvents().keyPressed, this, &DurationController::keyPressed);
+
 		gui->enable();
 		gui->disableAppEventCallbacks();
 		timeline.enable();
@@ -150,7 +144,7 @@ void DurationController::setup(){
 	timeline.setupFont("GUI/mplus-1c-regular.ttf", 9);
 	//tooltipFont.loadFont("GUI/NewMedia Fett.ttf", 7);
 #else
-	timeline.setupFont("GUI/NewMedia Fett.ttf", 9);
+	timeline.setupFont("GUI/mplus-1c-regular.ttf", 9);
 	//tooltipFont.loadFont("GUI/NewMedia Fett.ttf", 7);
 #endif
 	//setup timeline
@@ -199,46 +193,21 @@ void DurationController::setup(){
 	gui->addWidgetSouthOf(addTrackDropDown, "ADD PAGE");
 
     // RENAME PAGE
-    renamePage = new ofxUITextInput("RENAME PAGE", "", TEXT_INPUT_WIDTH*2, 0, 0, 0, OFX_UI_FONT_MEDIUM);
-    renamePage->setAutoClear(false);
-    renamePage->setAutoUnfocus(true);
-    gui->addWidgetEastOf(renamePage, "ADD TRACK");
+    //renamePage = new ofxUITextInput("RENAME PAGE", "", TEXT_INPUT_WIDTH*2, 0, 0, 0, OFX_UI_FONT_MEDIUM);
+    renamePage.setup();
+    //renamePage->setAutoClear(false);
+    //renamePage->setAutoUnfocus(true);
+    //gui->addWidgetEastOf(renamePage, "ADD TRACK");
+    renamePage.text = "RENAME PAGE";
+    renamePage.bounds.x = 400;
+    renamePage.bounds.y = 60;
+    renamePage.bounds.setWidth(500);
+    ofAddListener(renamePage.textChanged, this, &DurationController::onRenamePage);
 
     movePageLeft = new ofxUILabelButton("<", false, DROP_DOWN_WIDTH/4, 16, 0, 0, OFX_UI_FONT_MEDIUM, false);
-    gui->addWidgetEastOf(movePageLeft, "RENAME PAGE");
+    gui->addWidgetEastOf(movePageLeft, "ADD TRACK");
     movePageRight = new ofxUILabelButton(">", false, DROP_DOWN_WIDTH/4, 16, 0, 0, OFX_UI_FONT_MEDIUM, false);
     gui->addWidgetEastOf(movePageRight, "<");
-
-    loop01 = new ofxUILabelButton("01", false, DROP_DOWN_WIDTH/4, 16, 0, 0, OFX_UI_FONT_MEDIUM, false);
-    gui->addWidgetEastOf(loop01, ">");
-
-    loop02 = new ofxUILabelButton("02", false, DROP_DOWN_WIDTH/4, 16, 0, 0, OFX_UI_FONT_MEDIUM, false);
-    gui->addWidgetEastOf(loop02, "01");
-
-    loop03 = new ofxUILabelButton("03", false, DROP_DOWN_WIDTH/4, 16, 0, 0, OFX_UI_FONT_MEDIUM, false);
-    gui->addWidgetEastOf(loop03, "02");
-
-    loop04 = new ofxUILabelButton("04", false, DROP_DOWN_WIDTH/4, 16, 0, 0, OFX_UI_FONT_MEDIUM, false);
-    gui->addWidgetEastOf(loop04, "03");
-
-    loop05 = new ofxUILabelButton("05", false, DROP_DOWN_WIDTH/4, 16, 0, 0, OFX_UI_FONT_MEDIUM, false);
-    gui->addWidgetEastOf(loop05, "04");
-
-    loop06 = new ofxUILabelButton("06", false, DROP_DOWN_WIDTH/4, 16, 0, 0, OFX_UI_FONT_MEDIUM, false);
-    gui->addWidgetEastOf(loop06, "05");
-
-    loop07 = new ofxUILabelButton("07", false, DROP_DOWN_WIDTH/4, 16, 0, 0, OFX_UI_FONT_MEDIUM, false);
-    gui->addWidgetEastOf(loop07, "06");
-
-    loop08 = new ofxUILabelButton("08", false, DROP_DOWN_WIDTH/4, 16, 0, 0, OFX_UI_FONT_MEDIUM, false);
-    gui->addWidgetEastOf(loop08, "07");
-
-    loop09 = new ofxUILabelButton("09", false, DROP_DOWN_WIDTH/4, 16, 0, 0, OFX_UI_FONT_MEDIUM, false);
-    gui->addWidgetEastOf(loop09, "08");
-
-    loop10 = new ofxUILabelButton("10", false, DROP_DOWN_WIDTH/4, 16, 0, 0, OFX_UI_FONT_MEDIUM, false);
-    gui->addWidgetEastOf(loop10, "09");
-
 
     saveButton = new ofxUIMultiImageButton(32, 32, false, "GUI/save_.png", "SAVE");
     saveButton->setLabelVisible(false);
@@ -300,6 +269,8 @@ void DurationController::setup(){
 
 	//add events
     ofAddListener(timeline.events().bangFired, this, &DurationController::bangFired);
+    //ofAddListener(timeline.events().playbackLooped, this, &DurationController::playbackLooped);
+    ofAddListener(timeline.events().loopChanged, this, &DurationController::loopChanged);
     ofAddListener(timeline.events().trackGainedFocus, this, &DurationController::trackGainedFocus);
     ofAddListener(timeline.events().pageChanged, this, &DurationController::pageChanged);
 	ofAddListener(ofEvents().exit, this, &DurationController::exit);
@@ -858,7 +829,9 @@ void DurationController::handleOscOut(){
 				}
                 */
 				if(messageValid){
-					m.setAddress(ofFilePath::addLeadingSlash(pages[i]->getName()) + ofFilePath::addLeadingSlash(tracks[t]->getDisplayName()));
+                    // TODO add option to include page name as address prefix
+					//m.setAddress(ofFilePath::addLeadingSlash(pages[i]->getName()) + ofFilePath::addLeadingSlash(tracks[t]->getDisplayName()));
+                    m.setAddress(ofFilePath::addLeadingSlash(tracks[t]->getDisplayName()));
 					bundle.addMessage(m);
 					numMessages++;
 				}
@@ -909,13 +882,40 @@ void DurationController::bangFired(ofxTLBangEventArgs& bang){
         return;
     }
     ofxOscMessage m;
-    m.setAddress( ofFilePath::addLeadingSlash( timeline.trackNameToPage[bang.track->getName()]->getName() ) + ofFilePath::addLeadingSlash(bang.track->getDisplayName()) );
+    // TODO add page name as optional prefix
+    //m.setAddress( ofFilePath::addLeadingSlash( timeline.trackNameToPage[bang.track->getName()]->getName() ) + ofFilePath::addLeadingSlash(bang.track->getDisplayName()) );
+    m.setAddress( ofFilePath::addLeadingSlash(bang.track->getDisplayName()) );
 
     if(trackType == "Flags"){
         m.addStringArg(bang.flag);
     }
 
 	bangsReceived.push_back(m);
+
+    if (bang.track->getDisplayName() == "jump") {
+        if (timeline.getLoop(bang.flag) != NULL) {
+            timeline.setCurrentLoop(timeline.getLoop(bang.flag));
+            refreshAllOscOut = true;
+            //bangsReceived.clear(); // could clear bangs here
+        }
+    }
+}
+
+void DurationController::playbackLooped(ofxTLPlaybackEventArgs& args) {
+    //ofLogNotice() << "looped at " << args.currentTime;
+}
+
+void DurationController::loopChanged(ofxTLPlaybackEventArgs& args) {
+    //ofLogNotice() << "jumped to " << timeline.getCurrentLoop()->getLoopName() << " at " << args.currentTime;
+    if(settings.oscOutEnabled){
+        ofxOscMessage m;
+        m.setAddress("/jump");
+        m.addStringArg( timeline.getCurrentLoop()->getLoopName() );
+        oscLock.lock();
+        sender.sendMessage(m);
+        //refreshAllOscOut = true;
+        oscLock.unlock();
+    }
 }
 
 void DurationController::trackGainedFocus(ofxTLTrackEventArgs& args) {
@@ -926,11 +926,16 @@ void DurationController::trackGainedFocus(ofxTLTrackEventArgs& args) {
         }
         it++;
     }
-    renamePage->setFocus(false);
+    //renamePage->setFocus(false);
 }
 
 void DurationController::pageChanged(ofxTLPageEventArgs& args) {
-    renamePage->setTextString(args.currentPageName);
+    //renamePage->setTextString(args.currentPageName);
+    renamePage.text = args.currentPageName;
+}
+
+void DurationController::onRenamePage(string &s) {
+    timeline.setPageName(s);
 }
 
 //--------------------------------------------------------------
@@ -964,9 +969,9 @@ void DurationController::guiEvent(ofxUIEventArgs &e){
             it++;
         }
         // set page name
-        ofxUITextInput *ti = (ofxUITextInput *) e.widget;
-        string output = ti->getTextString();
-        timeline.setPageName(output);
+        //ofxUITextInput *ti = (ofxUITextInput *) e.widget;
+        //string output = ti->getTextString();
+        //timeline.setPageName(renamePage.text);
         needsSave = true;
     }
 
@@ -1047,47 +1052,6 @@ void DurationController::guiEvent(ofxUIEventArgs &e){
     else if(e.widget == loopToggle){
         timeline.setLoopType(loopToggle->getValue() ? OF_LOOP_NORMAL : OF_LOOP_NONE);
 		needsSave = true;
-    }
-
-    else if(e.widget == loop01) {
-        timeline.setInPointAtSeconds(loops[0][0]);
-        timeline.setOutPointAtSeconds(loops[0][1]);
-    }
-    else if(e.widget == loop02) {
-        timeline.setInPointAtSeconds(loops[1][0]);
-        timeline.setOutPointAtSeconds(loops[1][1]);
-    }
-    else if(e.widget == loop03) {
-        timeline.setInPointAtSeconds(loops[2][0]);
-        timeline.setOutPointAtSeconds(loops[2][1]);
-    }
-    else if(e.widget == loop04) {
-        timeline.setInPointAtSeconds(loops[3][0]);
-        timeline.setOutPointAtSeconds(loops[3][1]);
-    }
-    else if(e.widget == loop05) {
-        timeline.setInPointAtSeconds(loops[4][0]);
-        timeline.setOutPointAtSeconds(loops[4][1]);
-    }
-    else if(e.widget == loop06) {
-        timeline.setInPointAtSeconds(loops[5][0]);
-        timeline.setOutPointAtSeconds(loops[5][1]);
-    }
-    else if(e.widget == loop07) {
-        timeline.setInPointAtSeconds(loops[6][0]);
-        timeline.setOutPointAtSeconds(loops[6][1]);
-    }
-    else if(e.widget == loop08) {
-        timeline.setInPointAtSeconds(loops[7][0]);
-        timeline.setOutPointAtSeconds(loops[7][1]);
-    }
-    else if(e.widget == loop09) {
-        timeline.setInPointAtSeconds(loops[8][0]);
-        timeline.setOutPointAtSeconds(loops[8][1]);
-    }
-    else if(e.widget == loop10) {
-        timeline.setInPointAtSeconds(loops[9][0]);
-        timeline.setOutPointAtSeconds(loops[9][1]);
     }
 
     //BPM
@@ -1389,6 +1353,13 @@ void DurationController::draw(ofEventArgs& args){
 	timeline.draw();
 	gui->draw();
 
+    // draw renamePage text input
+    ofSetColor(64);
+    ofRect(renamePage.bounds);
+    ofNoFill();
+    ofSetColor(255);
+    renamePage.draw();
+
 	if(needsSave || timeline.hasUnsavedChanges()){
 		ofPushStyle();
 		ofSetColor(200,20,0, 40);
@@ -1431,6 +1402,7 @@ void DurationController::draw(ofEventArgs& args){
     }
 }
 
+
 //--------------------------------------------------------------
 void DurationController::keyPressed(ofKeyEventArgs& keyArgs){
     if(timeline.isModal()){
@@ -1451,6 +1423,7 @@ void DurationController::keyPressed(ofKeyEventArgs& keyArgs){
 
     int key = keyArgs.key;
 
+    // play / pause
 	if(key == ' '){
 		if(ofGetModifierShiftPressed()){
 			timeline.togglePlaySelectedTrack();
@@ -1465,193 +1438,65 @@ void DurationController::keyPressed(ofKeyEventArgs& keyArgs){
 		}
     }
 
-    if(key == 'i'){
-		if(ofGetModifierAltPressed()){
-			timeline.setInPointAtMillis(0);
-            needsSave = true;
-		}
-		else {
-	        timeline.setInPointAtPlayhead();
-            needsSave = true;
-		}
-    }
-
-    if(key == 'o'){
-		if(ofGetModifierAltPressed()){
-			timeline.setOutPointAtPercent(1.0);
-            needsSave = true;
-		}
-		else {
-	        timeline.setOutPointAtPlayhead();
-            needsSave = true;
-		}
-    }
-
-    if (key == '1') {
-        if(ofGetModifierShortcutKeyPressed()) {
-            loops[0][0] = timeline.getInTimeInSeconds();
-            loops[0][1] = timeline.getOutTimeInSeconds();
-            needsSave = true;
-        } else {
-            timeline.setInPointAtSeconds(loops[0][0]);
-            timeline.setOutPointAtSeconds(loops[0][1]);
-            timeline.setInPointAtSeconds(loops[0][0]);
-            timeline.setOutPointAtSeconds(loops[0][1]);
-        }
-    }
-    if (key == '2') {
-        if(ofGetModifierShortcutKeyPressed()) {
-            loops[1][0] = timeline.getInTimeInSeconds();
-            loops[1][1] = timeline.getOutTimeInSeconds();
-            needsSave = true;
-        } else {
-            timeline.setInPointAtSeconds(loops[1][0]);
-            timeline.setOutPointAtSeconds(loops[1][1]);
-            timeline.setInPointAtSeconds(loops[1][0]);
-            timeline.setOutPointAtSeconds(loops[1][1]);
-        }
-    }
-    if (key == '3') {
-        if(ofGetModifierShortcutKeyPressed()) {
-            loops[2][0] = timeline.getInTimeInSeconds();
-            loops[2][1] = timeline.getOutTimeInSeconds();
-            needsSave = true;
-        } else {
-            timeline.setInPointAtSeconds(loops[2][0]);
-            timeline.setOutPointAtSeconds(loops[2][1]);
-            timeline.setInPointAtSeconds(loops[2][0]);
-            timeline.setOutPointAtSeconds(loops[2][1]);
-        }
-    }
-    if (key == '4') {
-        if(ofGetModifierShortcutKeyPressed()) {
-            loops[3][0] = timeline.getInTimeInSeconds();
-            loops[3][1] = timeline.getOutTimeInSeconds();
-            needsSave = true;
-        } else {
-            timeline.setInPointAtSeconds(loops[3][0]);
-            timeline.setOutPointAtSeconds(loops[3][1]);
-            timeline.setInPointAtSeconds(loops[3][0]);
-            timeline.setOutPointAtSeconds(loops[3][1]);
-        }
-    }
-    if (key == '5') {
-        if(ofGetModifierShortcutKeyPressed()) {
-            loops[4][0] = timeline.getInTimeInSeconds();
-            loops[4][1] = timeline.getOutTimeInSeconds();
-            needsSave = true;
-        } else {
-            timeline.setInPointAtSeconds(loops[4][0]);
-            timeline.setOutPointAtSeconds(loops[4][1]);
-            timeline.setInPointAtSeconds(loops[4][0]);
-            timeline.setOutPointAtSeconds(loops[4][1]);
-        }
-    }
-    if (key == '6') {
-        if(ofGetModifierShortcutKeyPressed()) {
-            loops[5][0] = timeline.getInTimeInSeconds();
-            loops[5][1] = timeline.getOutTimeInSeconds();
-            needsSave = true;
-        } else {
-            timeline.setInPointAtSeconds(loops[5][0]);
-            timeline.setOutPointAtSeconds(loops[5][1]);
-            timeline.setInPointAtSeconds(loops[5][0]);
-            timeline.setOutPointAtSeconds(loops[5][1]);
-        }
-    }
-    if (key == '7') {
-        if(ofGetModifierShortcutKeyPressed()) {
-            loops[6][0] = timeline.getInTimeInSeconds();
-            loops[6][1] = timeline.getOutTimeInSeconds();
-            needsSave = true;
-        } else {
-            timeline.setInPointAtSeconds(loops[6][0]);
-            timeline.setOutPointAtSeconds(loops[6][1]);
-            timeline.setInPointAtSeconds(loops[6][0]);
-            timeline.setOutPointAtSeconds(loops[6][1]);
-        }
-    }
-    if (key == '8') {
-        if(ofGetModifierShortcutKeyPressed()) {
-            loops[7][0] = timeline.getInTimeInSeconds();
-            loops[7][1] = timeline.getOutTimeInSeconds();
-            needsSave = true;
-        } else {
-            timeline.setInPointAtSeconds(loops[7][0]);
-            timeline.setOutPointAtSeconds(loops[7][1]);
-            timeline.setInPointAtSeconds(loops[7][0]);
-            timeline.setOutPointAtSeconds(loops[7][1]);
-        }
-    }
-    if (key == '9') {
-        if(ofGetModifierShortcutKeyPressed()) {
-            loops[8][0] = timeline.getInTimeInSeconds();
-            loops[8][1] = timeline.getOutTimeInSeconds();
-            needsSave = true;
-        } else {
-            timeline.setInPointAtSeconds(loops[8][0]);
-            timeline.setOutPointAtSeconds(loops[8][1]);
-            timeline.setInPointAtSeconds(loops[8][0]);
-            timeline.setOutPointAtSeconds(loops[8][1]);
-        }
-    }
-    if (key == '0') {
-        if(ofGetModifierShortcutKeyPressed()) {
-            loops[9][0] = timeline.getInTimeInSeconds();
-            loops[9][1] = timeline.getOutTimeInSeconds();
-            needsSave = true;
-        } else {
-            timeline.setInPointAtSeconds(loops[9][0]);
-            timeline.setOutPointAtSeconds(loops[9][1]);
-            timeline.setInPointAtSeconds(loops[9][0]);
-            timeline.setOutPointAtSeconds(loops[9][1]);
-        }
-    }
-
     // collapse all tracks (including focused track)
     if (key == '<') {
         timeline.collapseAllTracks();
     }
 
+    // hide headers
     if (key == 0x09) { // horizontal TAB key
         headersEnabled = !headersEnabled;
     }
 
     // move track down
     if (key == 'd') {
-        ofxTLTrack* track = timeline.getPage(timeline.getCurrentPageName())->getFocusedTrack();
-        timeline.getPage(timeline.getCurrentPageName())->moveTrack(track, false);
-        map<string,ofPtr<ofxTLUIHeader> >::iterator it = headers.begin();
-        while(it != headers.end()){
+        if (ofGetModifierControlPressed()) {
+            ofxTLTrack* track = timeline.getPage(timeline.getCurrentPageName())->getFocusedTrack();
+            timeline.getPage(timeline.getCurrentPageName())->moveTrack(track, false);
+            map<string,ofPtr<ofxTLUIHeader> >::iterator it = headers.begin();
+            while(it != headers.end()){
+                ofEventArgs args;
+                it->second->viewWasResized(args);
+                it++;
+            }
             ofEventArgs args;
-            it->second->viewWasResized(args);
-            it++;
+            ofNotifyEvent(timeline.events().viewWasResized, args);
+            needsSave = true;
         }
-        ofEventArgs args;
-        ofNotifyEvent(timeline.events().viewWasResized, args);
-        needsSave = true;
     }
 
     // move track up
     if (key == 'u') {
-        ofxTLTrack* track = timeline.getPage(timeline.getCurrentPageName())->getFocusedTrack();
-        timeline.getPage(timeline.getCurrentPageName())->moveTrack(track, true);
-        map<string,ofPtr<ofxTLUIHeader> >::iterator it = headers.begin();
-        while(it != headers.end()){
+        if (ofGetModifierControlPressed()) {
+            ofxTLTrack* track = timeline.getPage(timeline.getCurrentPageName())->getFocusedTrack();
+            timeline.getPage(timeline.getCurrentPageName())->moveTrack(track, true);
+            map<string,ofPtr<ofxTLUIHeader> >::iterator it = headers.begin();
+            while(it != headers.end()){
+                ofEventArgs args;
+                it->second->viewWasResized(args);
+                it++;
+            }
             ofEventArgs args;
-            it->second->viewWasResized(args);
-            it++;
+            ofNotifyEvent(timeline.events().viewWasResized, args);
+            needsSave = true;
         }
-        ofEventArgs args;
-        ofNotifyEvent(timeline.events().viewWasResized, args);
-        needsSave = true;
     }
 
-	if(ofGetModifierShortcutKeyPressed() && (key == 's' || key=='s'-96) ){
+    // create loop
+    if (key == 'l') {
+        if(ofGetModifierControlPressed()){
+            timeline.addLoop(ofFloatRange(timeline.getPercentComplete(), timeline.getPercentComplete()+0.1), "loop");
+            needsSave = true;
+        }
+    }
+
+    // save
+	if (ofGetModifierShortcutKeyPressed() && (key == 's' || key=='s'-96) ){
 		saveProject();
 	}
 
-    if( (key == OF_KEY_RETURN && ofGetModifierAltPressed()) || key == OF_KEY_F11 ) {
+    // fullscreen
+    if ( (key == OF_KEY_RETURN && ofGetModifierAltPressed()) || key == OF_KEY_F11 ) {
         ofToggleFullscreen();
     }
 
@@ -1880,7 +1725,7 @@ void DurationController::loadProject(string projectPath, string projectName, boo
     timeline.setInPointAtTimecode(projectSettings.getValue("inpoint", "00:00:00:000"));
     timeline.setOutPointAtTimecode(projectSettings.getValue("outpoint", "00:00:00:000"));
 
-    bool looping = projectSettings.getValue("loop", true);
+    bool looping = projectSettings.getValue("doLoop", true);
     timeline.setLoopType(looping ? OF_LOOP_NORMAL : OF_LOOP_NONE);
 
     durationLabel->setTextString(timeline.getDurationInTimecode());
@@ -1892,11 +1737,17 @@ void DurationController::loadProject(string projectPath, string projectName, boo
     int numLoops = projectSettings.getNumTags("loop");
     for(int l = 0; l < numLoops; l++){
         projectSettings.pushTag("loop", l);
-        loops[l][0] = projectSettings.getValue("in",  (float)((l+1.0)*2.0 ));
-        loops[l][1] = projectSettings.getValue("out", (float)(((l+1.0)*2.0) + 2.0));
-        ofLogError() << l << ":" << loops[l][0] << "," << loops[l][1];
+        float in = projectSettings.getValue("in", (float)((l+1.0)*2.0 ));
+        float out = projectSettings.getValue("out", (float)(((l+1.0)*2.0) + 2.0));
+        string name = projectSettings.getValue("loopName", "loop");
+        timeline.addLoop(ofFloatRange(in, out), name);
         projectSettings.popTag();
     }
+
+    if (numLoops > 0) { // if the project contains loops, remove the default loop that was added in timeline.setup()
+        timeline.getLoops().erase (timeline.getLoops().begin(),timeline.getLoops().begin()+1);
+    }
+
     projectSettings.popTag(); // loops
 
     projectSettings.popTag(); //timeline settings;
@@ -2005,15 +1856,18 @@ void DurationController::saveProject(){
     projectSettings.addValue("playhead", timeline.getCurrentTimecode());
     projectSettings.addValue("inpoint", timeline.getInPointTimecode());
     projectSettings.addValue("outpoint", timeline.getOutPointTimecode());
-    projectSettings.addValue("loop", timeline.getLoopType() == OF_LOOP_NORMAL);
+    projectSettings.addValue("doLoop", timeline.getLoopType() == OF_LOOP_NORMAL);
+
 
     projectSettings.addTag("loops");
     projectSettings.pushTag("loops");
+    vector<ofxTLInOut*>& loops = timeline.getLoops();
     for (int l = 0; l < loops.size(); l++) {
         projectSettings.addTag("loop");
         projectSettings.pushTag("loop", l);
-        projectSettings.addValue("in", loops[l][0]);
-        projectSettings.addValue("out", loops[l][1]);
+        projectSettings.addValue("in", loops[l]->getRange().min);
+        projectSettings.addValue("out", loops[l]->getRange().max);
+        projectSettings.addValue("loopName", loops[l]->getLoopName());
         projectSettings.popTag(); // loop
     }
     projectSettings.popTag(); // loops

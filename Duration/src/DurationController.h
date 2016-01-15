@@ -39,6 +39,7 @@
 #include "ofxTLUIHeader.h"
 #include "ofxUI.h"
 #include "ofxLocalization.h"
+#include "ofRange.h"
 //#include "ofxFTGLFont.h"
 //#include "ofxTLAudioTrack.h"
 
@@ -67,6 +68,7 @@ typedef struct{
 	string text;
 	ofColor debugColor;
 } Tooltip;
+
 
 class DurationController : public ofThread  {
   public:
@@ -124,18 +126,7 @@ class DurationController : public ofThread  {
     ofxUILabelButton* movePageLeft;
     ofxUILabelButton* movePageRight;
 
-    ofxUILabelButton* loop01;
-    ofxUILabelButton* loop02;
-    ofxUILabelButton* loop03;
-    ofxUILabelButton* loop04;
-    ofxUILabelButton* loop05;
-    ofxUILabelButton* loop06;
-    ofxUILabelButton* loop07;
-    ofxUILabelButton* loop08;
-    ofxUILabelButton* loop09;
-    ofxUILabelButton* loop10;
-
-    ofxUITextInput* renamePage;
+    ofxTextInputField renamePage;
 
     string defaultProjectDirectoryPath;
 	DurationProjectSettings settings;
@@ -154,6 +145,8 @@ class DurationController : public ofThread  {
   protected:
 	ofxTimeline timeline;
     void bangFired(ofxTLBangEventArgs& bang);
+    void playbackLooped(ofxTLPlaybackEventArgs& args);
+    void loopChanged(ofxTLPlaybackEventArgs& args);
     void trackGainedFocus(ofxTLTrackEventArgs& args);
     void pageChanged(ofxTLPageEventArgs& args);
 	//vector<string> trackAddresses;
@@ -211,9 +204,11 @@ class DurationController : public ofThread  {
 	ofxTLColorTrack* paletteTrack;
 	string palettePath;
 
-    vector <vector<float>> loops;
-
 private:
+
+    void onRenamePage(string &s);
+
+    // generate random string
 	std::string gen_random(size_t length);
 
     bool headersEnabled;
