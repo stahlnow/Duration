@@ -1450,7 +1450,7 @@ void DurationController::keyPressed(ofKeyEventArgs& keyArgs){
 
     // move track down
     if (key == 'd') {
-        if (ofGetModifierControlPressed()) {
+        if (ofGetModifierShortcutKeyPressed()) {
             ofxTLTrack* track = timeline.getPage(timeline.getCurrentPageName())->getFocusedTrack();
             timeline.getPage(timeline.getCurrentPageName())->moveTrack(track, false);
             map<string,ofPtr<ofxTLUIHeader> >::iterator it = headers.begin();
@@ -1467,7 +1467,7 @@ void DurationController::keyPressed(ofKeyEventArgs& keyArgs){
 
     // move track up
     if (key == 'u') {
-        if (ofGetModifierControlPressed()) {
+        if (ofGetModifierShortcutKeyPressed()) {
             ofxTLTrack* track = timeline.getPage(timeline.getCurrentPageName())->getFocusedTrack();
             timeline.getPage(timeline.getCurrentPageName())->moveTrack(track, true);
             map<string,ofPtr<ofxTLUIHeader> >::iterator it = headers.begin();
@@ -1484,7 +1484,7 @@ void DurationController::keyPressed(ofKeyEventArgs& keyArgs){
 
     // create loop
     if (key == 'l') {
-        if(ofGetModifierControlPressed()){
+        if(ofGetModifierShortcutKeyPressed()){
             timeline.addLoop(ofFloatRange(timeline.getPercentComplete(), timeline.getPercentComplete()+0.1), "loop");
             needsSave = true;
         }
